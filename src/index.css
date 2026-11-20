@@ -1,0 +1,4 @@
+@import "tailwindcss";
+
+button, [role="button"], select, summary { cursor: pointer; }
+button:disabled { cursor: not-allowed; }
