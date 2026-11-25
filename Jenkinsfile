@@ -17,7 +17,7 @@ pipeline {
         stage('Checkout') {
             agent {
                 docker {
-                    image 'alpine:3.21'
+                    image 'oven/bun:alpine'
                     reuseNode true
                 }
             }
@@ -33,14 +33,8 @@ pipeline {
         stage('Install Dependencies') {
             agent {
                 docker {
-                    image 'golang:1.27-alpine'
+                    image 'oven/bun:alpine'
                     reuseNode true
-                    args '''
-                        -e HOME=/tmp
-                        -e GOCACHE=/go-cache/build
-                        -e GOMODCACHE=/go-cache/mod
-                        -v cicd-go-cache:/go-cache
-                    '''
                 }
             }
 
@@ -48,39 +42,23 @@ pipeline {
                 sh '''
                     set -e
 
-                    echo "=== Go Runtime ==="
-                    go version
+                    echo "=== Installing Dependencies ==="
 
-                    if [ ! -f /go-cache/mod/.stamp ] \
-                        || [ go.mod -nt /go-cache/mod/.stamp ] \
-                        || [ go.sum -nt /go-cache/mod/.stamp ]; then
-                        echo "=== Downloading Go Modules ==="
-                        go mod download
-                        go mod verify
-                        touch /go-cache/mod/.stamp
-                    else
-                        echo "=== go.mod/go.sum unchanged, using cached modules ==="
-                    fi
+                    bun install
 
-                    echo "=== Go Dependencies Installed ==="
+                    echo "=== Dependencies Installed ==="
                 '''
             }
         }
 
         // ============================================================
-        // TEST & COVERAGE
+        // TEST
         // ============================================================
         stage('Test') {
             agent {
                 docker {
-                    image 'golang:1.27-alpine'
+                    image 'node:24-alpine'
                     reuseNode true
-                    args '''
-                        -e HOME=/tmp
-                        -e GOCACHE=/go-cache/build
-                        -e GOMODCACHE=/go-cache/mod
-                        -v cicd-go-cache:/go-cache
-                    '''
                 }
             }
 
@@ -88,53 +66,11 @@ pipeline {
                 sh '''
                     set -e
 
-                    echo "=== Running Go Tests with Statement Coverage ==="
-                    go test -v -coverprofile=coverage.out -covermode=atomic ./...
+                    echo "=== Running Tests with Coverage ==="
 
-                    echo "=== Coverage Summary by Function ==="
-                    go tool cover -func=coverage.out
+                    npx vitest run --coverage
 
                     echo "=== Tests Passed ==="
-                '''
-            }
-
-            post {
-                always {
-                    archiveArtifacts(
-                        artifacts: 'coverage.out',
-                        allowEmptyArchive: true
-                    )
-                }
-            }
-        }
-
-        // ============================================================
-        // BUILD APPLICATION BINARY
-        // ============================================================
-        stage('Build Application') {
-            agent {
-                docker {
-                    image 'golang:1.27-alpine'
-                    reuseNode true
-                    args '''
-                        -e HOME=/tmp
-                        -e GOCACHE=/go-cache/build
-                        -e GOMODCACHE=/go-cache/mod
-                        -v cicd-go-cache:/go-cache
-                    '''
-                }
-            }
-
-            steps {
-                sh '''
-                    set -e
-
-                    echo "=== Compiling Standalone Linux Binary ==="
-                    CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o server .
-
-                    echo "=== Binary Created ==="
-                    ls -lh server
-                    file server || true
                 '''
             }
         }
@@ -187,6 +123,9 @@ pipeline {
 
             post {
                 always {
+                    // failOnError must be false: otherwise Warnings NG can mark the
+                    // whole build FAILURE while later stages still run (all green, badge red).
+                    // Build failure on HIGH/CRITICAL comes from trivy --exit-code 1 above.
                     recordIssues(
                         enabledForFailure: true,
                         failOnError: false,
@@ -203,12 +142,50 @@ pipeline {
         }
 
         // ============================================================
-        // PACKAGE APPLICATION (PURE SOURCE CODE DARI GITHUB)
+        // SONARQUBE ANALYSIS
+        // ============================================================
+        stage('SonarQube Analysis') {
+            agent {
+                docker {
+                    image 'sonarsource/sonar-scanner-cli:latest'
+                    reuseNode true
+                    args '--network cicd-network'
+                }
+            }
+
+            steps {
+                withSonarQubeEnv('SonarQube') {
+                    sh '''
+                        set -e
+
+                        echo "=== SonarQube Analysis ==="
+
+                        sonar-scanner
+
+                        echo "=== SonarQube Analysis Completed ==="
+                    '''
+                }
+            }
+        }
+
+        // ============================================================
+        // QUALITY GATE
+        // ============================================================
+        stage('Quality Gate') {
+            steps {
+                timeout(time: 30, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+
+        // ============================================================
+        // PACKAGE APPLICATION
         // ============================================================
         stage('Package Application') {
             agent {
                 docker {
-                    image 'alpine:3.21'
+                    image 'node:24-alpine'
                     reuseNode true
                     args '-u root'
                 }
@@ -222,54 +199,30 @@ pipeline {
                     echo "       CREATING APPLICATION PACKAGE"
                     echo "======================================"
 
-                    apk add --no-cache git zip unzip
+                    apk add --no-cache zip unzip
 
                     rm -f latest-app.zip
 
-                    git config --global --add safe.directory '*' || true
-
-                    echo "=== Creating Source Code Package (Pure Code from GitHub) ==="
-                    if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-                        git archive --format=zip HEAD -o latest-app.zip
-                    else
-                        zip -r latest-app.zip . \
-                            -x ".git/*" \
-                            -x ".env*" \
-                            -x "server" \
-                            -x "server.exe" \
-                            -x "main" \
-                            -x "app" \
-                            -x "*.out" \
-                            -x "*.test" \
-                            -x "*.prof" \
-                            -x "cov*" \
-                            -x "coverage*" \
-                            -x ".trivy-cache/*" \
-                            -x "trivy-results.sarif" \
-                            -x "latest-app.zip" \
-                            -x ".vscode/*" \
-                            -x ".idea/*"
-                    fi
+                    zip -r latest-app.zip . \
+                        -x "node_modules/*" \
+                        -x ".git/*" \
+                        -x ".env" \
+                        -x ".env.*" \
+                        -x "coverage/*" \
+                        -x ".next/*" \
+                        -x "out/*" \
+                        -x ".trivy-cache/*" \
+                        -x "latest-app.zip" \
+                        -x "trivy-results.sarif" \
+                        -x ".docs/*"
 
                     echo "=== Application Package Created ==="
+
                     ls -lh latest-app.zip
 
-                    echo "=== Verify .env excluded ==="
-                    if unzip -Z1 latest-app.zip | grep -E '^\\.env$' >/dev/null; then
-                        echo "ERROR: zip masih berisi .env rahasia"
-                        exit 1
-                    fi
-                    echo "OK: file .env tidak ada di zip"
+                    echo "=== Package Content ==="
 
-                    echo "=== Verify build binary excluded ==="
-                    if unzip -Z1 latest-app.zip | grep -E '^server$' >/dev/null; then
-                        echo "ERROR: zip masih berisi biner hasil build"
-                        exit 1
-                    fi
-                    echo "OK: biner hasil build tidak disertakan dalam zip"
-
-                    echo "=== Package Content (sample) ==="
-                    unzip -l latest-app.zip | head -n 60
+                    unzip -l latest-app.zip
                 '''
             }
         }
@@ -318,18 +271,18 @@ pipeline {
                         echo "       PUBLISHING USER CONTENT"
                         echo "======================================"
 
-                        docker exec cicd-jenkins \\
-                            mkdir -p \\
+                        docker exec cicd-jenkins \
+                            mkdir -p \
                             "/var/jenkins_home/userContent/applications/${appName}/${buildId}"
 
-                        docker cp \\
-                            latest-app.zip \\
+                        docker cp \
+                            latest-app.zip \
                             "cicd-jenkins:/var/jenkins_home/userContent/applications/${appName}/${buildId}/latest-app.zip"
 
                         echo "=== Published File ==="
 
-                        docker exec cicd-jenkins \\
-                            ls -lh \\
+                        docker exec cicd-jenkins \
+                            ls -lh \
                             "/var/jenkins_home/userContent/applications/${appName}/${buildId}/latest-app.zip"
                     """
 

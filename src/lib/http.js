@@ -3,8 +3,11 @@ import axios from 'axios'
 export const TOKEN_KEY = 'token'
 export const AUTH_EXPIRED_EVENT = 'auth:expired'
 
-// Seluruh request memakai prefix /api: di dev di-proxy Vite, di production dilayani binary Go yang sama.
-export const http = axios.create({ baseURL: '/api', timeout: 60000 })
+// Di production FE & BE berada di domain berbeda, jadi URL BE diisi lewat VITE_API_URL.
+// Di dev dikosongkan: request relatif /api dan di-proxy oleh Vite.
+const API_URL = import.meta.env.VITE_API_URL ?? ''
+
+export const http = axios.create({ baseURL: `${API_URL}/api`, timeout: 60000 })
 
 http.interceptors.request.use((config) => {
   const token = localStorage.getItem(TOKEN_KEY)
