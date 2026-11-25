@@ -29,6 +29,7 @@ export default function App() {
         <Route path="/posts/:slug" element={<PostDetailPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/dashboard" element={<ProtectedRoute role="author"><AuthorDashboardPage /></ProtectedRoute>} />
         <Route path="/author" element={<ProtectedRoute role="author"><AuthorDashboardPage /></ProtectedRoute>} />
         <Route path="/author/posts/:id" element={<ProtectedRoute role="author"><AuthorPostDetailPage /></ProtectedRoute>} />
         <Route path="/admin" element={<ProtectedRoute role="admin"><AdminDashboardPage /></ProtectedRoute>} />
