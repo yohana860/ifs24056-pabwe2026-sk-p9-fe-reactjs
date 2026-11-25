@@ -15,7 +15,7 @@ export default function Navbar() {
   return (
     <nav className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
       <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-2 px-4 py-3">
-        <Link to="/" className="text-lg font-bold text-emerald-700">📝 Delcom Blog</Link>
+        <Link to="/" className="text-lg font-bold text-emerald-800">📝 Delcom Blog</Link>
         <div className="flex flex-wrap items-center gap-1">
           <Link to="/" className={link}>Beranda</Link>
           {user ? (
@@ -27,7 +27,7 @@ export default function Navbar() {
           ) : (
             <>
               <Link to="/login" className={link}>Masuk</Link>
-              <Link to="/register" className="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-500">Daftar</Link>
+              <Link to="/register" className="rounded-lg bg-emerald-800 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-900">Daftar</Link>
             </>
           )}
         </div>

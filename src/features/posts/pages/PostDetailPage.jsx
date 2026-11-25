@@ -15,7 +15,7 @@ export default function PostDetailPage() {
     getPublicPost(slug).then(setPost).catch((err) => setError(errorMessage(err, 'Artikel tidak ditemukan.')))
   }, [slug])
 
-  const back = <Link to="/" className="text-sm text-emerald-700 hover:underline">← Semua artikel</Link>
+  const back = <Link to="/" className="text-sm font-medium text-emerald-800 hover:underline">← Semua artikel</Link>
   if (error) return <main className="mx-auto w-full max-w-4xl space-y-4 px-4 py-8"><p role="alert" className="rounded-xl bg-red-50 p-4 text-red-700">{error}</p>{back}</main>
   if (!post) return <Spinner />
 

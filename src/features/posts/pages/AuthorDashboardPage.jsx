@@ -12,7 +12,7 @@ import PostTable from '../components/PostTable'
 function StatCard({ label, value, color }) {
   return (
     <div className={`rounded-xl p-5 text-white shadow ${color}`}>
-      <p className="text-sm opacity-90">{label}</p>
+      <p className="text-sm font-semibold text-white">{label}</p>
       <p className="text-3xl font-bold" data-testid={`stat-${label}`}>{value}</p>
     </div>
   )
@@ -77,14 +77,14 @@ export default function AuthorDashboardPage() {
         <h1 className="text-2xl font-bold text-slate-800">Dashboard Penulis</h1>
         <div className="flex flex-wrap gap-2">
           <button type="button" onClick={() => setModal({ type: 'ai' })} className="rounded-lg bg-violet-600 px-4 py-2 text-sm text-white hover:bg-violet-500">✨ AI Blog Generator</button>
-          <button type="button" onClick={() => setModal({ type: 'post' })} className="rounded-lg bg-emerald-600 px-4 py-2 text-sm text-white hover:bg-emerald-500">+ Tulis Artikel</button>
+          <button type="button" onClick={() => setModal({ type: 'post' })} className="rounded-lg bg-emerald-800 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-900">+ Tulis Artikel</button>
         </div>
       </header>
 
       <section aria-label="Statistik" className="grid gap-4 sm:grid-cols-3">
-        <StatCard label="Total Artikel" value={stats.total} color="bg-emerald-600" />
-        <StatCard label="Total Terbit" value={stats.total_terbit} color="bg-sky-600" />
-        <StatCard label="Draf" value={stats.belum_selesai} color="bg-amber-500" />
+        <StatCard label="Total Artikel" value={stats.total} color="bg-emerald-800" />
+        <StatCard label="Total Terbit" value={stats.total_terbit} color="bg-sky-800" />
+        <StatCard label="Draf" value={stats.belum_selesai} color="bg-amber-900" />
       </section>
 
       {loading && <Spinner />}

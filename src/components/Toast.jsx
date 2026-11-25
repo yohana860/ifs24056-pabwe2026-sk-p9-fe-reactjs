@@ -4,8 +4,8 @@ const ToastContext = createContext(null)
 let counter = 0
 
 const STYLE = {
-  success: 'bg-emerald-600 text-white',
-  error: 'bg-red-600 text-white',
+  success: 'bg-emerald-800 text-white font-medium',
+  error: 'bg-red-800 text-white font-medium',
 }
 
 export function ToastProvider({ children }) {

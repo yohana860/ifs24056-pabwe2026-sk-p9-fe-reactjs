@@ -10,6 +10,18 @@ export default defineConfig({
     port: 5174,
     proxy: { '/api': { target: 'http://localhost:8081', changeOrigin: true } },
   },
+  build: {
+    sourcemap: true,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('@toast-ui')) {
+            return 'toastui'
+          }
+        },
+      },
+    },
+  },
   test: {
     environment: 'jsdom',
     globals: true,

@@ -61,9 +61,9 @@ export default function AdminDashboardPage() {
     <main className="mx-auto w-full max-w-[1400px] space-y-6 px-4 py-6">
       <h1 className="text-2xl font-bold text-slate-800">Monitoring Admin</h1>
       <section aria-label="Statistik sistem" className="grid gap-4 sm:grid-cols-3">
-        <div className="rounded-xl bg-emerald-600 p-5 text-white"><p className="text-sm">Total Pengguna</p><p className="text-3xl font-bold" data-testid="stat-users">{users.length}</p></div>
-        <div className="rounded-xl bg-sky-600 p-5 text-white"><p className="text-sm">Total Artikel</p><p className="text-3xl font-bold" data-testid="stat-posts">{totalPosts}</p></div>
-        <div className="rounded-xl bg-amber-500 p-5 text-white"><p className="text-sm">Artikel Terbit</p><p className="text-3xl font-bold" data-testid="stat-published">{totalPublished}</p></div>
+        <div className="rounded-xl bg-emerald-800 p-5 text-white"><p className="text-sm font-semibold text-white">Total Pengguna</p><p className="text-3xl font-bold" data-testid="stat-users">{users.length}</p></div>
+        <div className="rounded-xl bg-sky-800 p-5 text-white"><p className="text-sm font-semibold text-white">Total Artikel</p><p className="text-3xl font-bold" data-testid="stat-posts">{totalPosts}</p></div>
+        <div className="rounded-xl bg-amber-900 p-5 text-white"><p className="text-sm font-semibold text-white">Artikel Terbit</p><p className="text-3xl font-bold" data-testid="stat-published">{totalPublished}</p></div>
       </section>
 
       <section aria-label="Direktori pengguna" className="space-y-2">

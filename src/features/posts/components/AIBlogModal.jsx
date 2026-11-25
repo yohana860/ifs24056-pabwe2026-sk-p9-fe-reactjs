@@ -45,7 +45,7 @@ export default function AIBlogModal({ categories, onClose, onApply }) {
             Sertakan penelusuran Search Engine (sumber terkini)
           </label>
         </div>
-        <button type="button" onClick={generate} disabled={generating} className="rounded-lg bg-emerald-600 px-4 py-2 text-white hover:bg-emerald-500 disabled:opacity-50">
+        <button type="button" onClick={generate} disabled={generating} className="rounded-lg bg-emerald-800 px-4 py-2 font-medium text-white hover:bg-emerald-900 disabled:opacity-50">
           {generating ? 'AI sedang menulis...' : 'Buat Draf'}
         </button>
         {draft && (
@@ -59,7 +59,7 @@ export default function AIBlogModal({ categories, onClose, onApply }) {
                 <h4 className="font-medium text-slate-800">Sumber Rujukan Search Engine</h4>
                 <ol className="list-decimal pl-5 text-sm">
                   {draft.sources.map((s) => (
-                    <li key={s.url}><a href={s.url} target="_blank" rel="noopener noreferrer" className="text-emerald-700 underline">{s.title}</a></li>
+                    <li key={s.url}><a href={s.url} target="_blank" rel="noopener noreferrer" className="font-medium text-emerald-800 underline">{s.title}</a></li>
                   ))}
                 </ol>
               </div>

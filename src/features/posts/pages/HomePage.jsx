@@ -37,7 +37,7 @@ export default function HomePage() {
       <input type="search" aria-label="Cari artikel" placeholder="Cari artikel secara real-time..." value={q} onChange={(e) => setQ(e.target.value)} className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3" />
       <div role="group" aria-label="Filter kategori" className="flex flex-wrap gap-2">
         {[CATEGORY_ALL, ...categories].map((c) => (
-          <button key={c} type="button" aria-pressed={c === category} onClick={() => setCategory(c)} className={`rounded-full px-4 py-1.5 text-sm ${c === category ? 'bg-emerald-600 text-white' : 'bg-white text-slate-700 hover:bg-emerald-50'}`}>{c}</button>
+          <button key={c} type="button" aria-pressed={c === category} onClick={() => setCategory(c)} className={`rounded-full px-4 py-1.5 text-sm ${c === category ? 'bg-emerald-800 font-medium text-white' : 'bg-white text-slate-700 hover:bg-emerald-50'}`}>{c}</button>
         ))}
       </div>
       {error && <p role="alert" className="rounded-xl bg-red-50 p-4 text-red-700">{error}</p>}

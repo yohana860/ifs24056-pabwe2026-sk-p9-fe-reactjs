@@ -14,7 +14,7 @@ export default function AuthorPostDetailPage() {
     getMyPost(id).then(setPost).catch((err) => setError(errorMessage(err, 'Artikel tidak dapat dimuat.')))
   }, [id])
 
-  const back = <Link to="/author" className="text-sm text-emerald-700 hover:underline">← Kembali ke dashboard</Link>
+  const back = <Link to="/author" className="text-sm font-medium text-emerald-800 hover:underline">← Kembali ke dashboard</Link>
   if (error) return <main className="mx-auto max-w-4xl space-y-4 px-4 py-8"><p role="alert" className="rounded-xl bg-red-50 p-4 text-red-700">{error}</p>{back}</main>
   if (!post) return <Spinner />
 
